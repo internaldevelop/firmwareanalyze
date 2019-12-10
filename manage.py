@@ -8,15 +8,15 @@ import py_eureka_client.eureka_client as eureka_client
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'firmwareanalyze.settings')
     try:
-
+        # EUREKA接口
         eureka_server_list = "http://localhost:10100/eureka/"
         your_rest_server_host = "localhost"
-        your_rest_server_port = 10111
+        your_rest_server_port = 10112
 
         # The flowing code will register your server to eureka server and also start to send heartbeat every 30 seconds
         # 注册服务
         eureka_client.init_registry_client(eureka_server=eureka_server_list,
-                                           app_name="firmware-fetch",
+                                           app_name="firmware-analyze",
                                            instance_host=your_rest_server_host,
                                            instance_port=your_rest_server_port)
         # 发现服务
@@ -28,7 +28,11 @@ def main():
                                        # 返回类型，默认为 `string`，可以传入 `json`，如果传入值是 `json`，那么该方法会返回一个 `dict` 对象
                                        return_type="string")
         print("result of other service" + res)
+    except ZeroDivisionError as e:
+        print('except:', e)
 
+
+    try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
         raise ImportError(

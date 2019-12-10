@@ -8,7 +8,7 @@ from common.error_code import Error
 from common.utils.http_request import req_get_param_int, req_get_param
 import common.config
 
-from firmware_fetch.firmware_db import FirmwareDB
+from fw_fetch.firmware_db import FirmwareDB
 firmware_db = FirmwareDB()
 
 def index(request):

@@ -18,6 +18,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('firmware-fetch/', include('firmware_fetch.urls')),
-    # path('firmware-analyze/', include('firmware_analyze.urls')),
+    path('fw-fetch/', include('fw_fetch.urls')),
+    # path('fw-analyze/', include('fw_analyze.urls')),
 ]
