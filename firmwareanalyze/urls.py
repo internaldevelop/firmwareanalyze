@@ -19,5 +19,5 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('fw-fetch/', include('fw_fetch.urls')),
-    # path('fw-analyze/', include('fw_analyze.urls')),
+    path('fw-analyze/', include('fw_analyze.urls')),
 ]
