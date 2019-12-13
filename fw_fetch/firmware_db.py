@@ -6,6 +6,7 @@ import common.config
 
 from common.utils.general import SysUtils
 
+import pymongo
 import re
 import requests
 import urllib.request
@@ -13,9 +14,11 @@ import os
 from urllib.request import urlretrieve
 from bs4 import BeautifulSoup
 
-# firmware 集合
-firmware_col = common.config.g_firmware_col
+# firmware 信息集合
+firmware_info_col = common.config.g_firmware_info_col
 
+# 自定义固件信息的 ID号的起始值为900,000
+custom_firmware_id_base = 900000
 
 class Firmware():
 
@@ -43,6 +46,7 @@ class Firmware():
     def get_firmware(self, url_firmware, savepath):
 
         try:
+
             # self.makedir('firmware')
 
             # 获取网页的源代码
@@ -88,11 +92,62 @@ class Firmware():
                     rom_info_down = soup.find('div', class_="rom_info_down")
                     print(rom_info_down)
 
+                    rom_info_data = soup.find('div', class_="rom_info_data")
+                    print(rom_info_data)
+
+                    rom_info_data = str(rom_info_data)
+                    reg = r'<p>固件厂商：.*</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
+                    reg = re.compile(reg)
+                    v = re.findall(reg, rom_info_data)
+                    print(v[0])
+                    firmware_manufacturer = v[0]
+
+                    reg = r'<p>适用机型：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
+                    reg = re.compile(reg)
+                    v = re.findall(reg, rom_info_data)
+                    print(v[0])
+                    application_mode = v[0]
+
+                    reg = r'<p>固件版本：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
+                    reg = re.compile(reg)
+                    v = re.findall(reg, rom_info_data)
+                    print(v[0])
+                    firmware_version = v[0]
+
+                    reg = r'<p>文件大小：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
+                    reg = re.compile(reg)
+                    v = re.findall(reg, rom_info_data)
+                    print(v[0])
+                    firmware_size = v[0]
+
+                    reg = r'<p>发布日期：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
+                    reg = re.compile(reg)
+                    v = re.findall(reg, rom_info_data)
+                    print(v[0])
+                    pub_date = v[0]
+
+
                     rom_info_down = str(rom_info_down)
                     reg = r'<a class="romdown" href="(.*)">立即下载固件</a>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
                     reg = re.compile(reg)
                     urls = re.findall(reg, rom_info_down)
                     print(urls[0])
+
+                    # firmware_manufacturer = models.CharField(max_length=200)    #固件厂商
+                    # application_mode = models.CharField(max_length=128)         #适用机型
+                    # firmware_version = models.CharField(max_length=16)          #固件版本
+                    # firmware_size = models.CharField(max_length=8)              #文件大小
+                    # pub_date = models.DateTimeField('date published')           #发布日期
+                    # firmware_file_path = models.CharField(max_length=255)       #本地存放路径
+                    # 组装固件信息，并添加
+                    item = {'fw_manufacturer': firmware_manufacturer,
+                            'application_mode': application_mode,
+                            'fw_version': firmware_version,
+                            'fw_size': firmware_size,
+                            'pub_date': pub_date,
+                            'fw_file_path': "c:\\xxx"
+                            }
+                    result = self.add(item)
 
                     # filename = os.path.basename(urls[0])
                     # # readme = savepath + "\\" + filename + ".txt"
@@ -145,20 +200,168 @@ class Firmware():
         except Exception as e:
             print(e)
 
+    def max_firmware_id(self):
+        return self.get_field_max_value(firmware_info_col, 'firmware_id')
+
+    def info_count(self):
+        total_count = firmware_info_col.count()
+        return total_count
+
+    def get_field_max_value(self, coll, field):
+        # 字段按照数字顺序整理：collation({'locale': 'zh', 'numericOrdering': True})
+        res_curosr = coll.find({}, {'_id': 0, field: 1}). \
+            collation({'locale': 'zh', 'numericOrdering': True}).sort(field, -1)
+        item = list(res_curosr)[0]
+        return item[field]
+
+    def get_field_max_value_int(self, coll, field):
+        return int(self.get_field_max_value(coll, field))
+
+    # 检查传入的firmware_id，返回建议ID，检查项包括取值范围和是否冲突（firmware_id需要唯一）
+    def get_suggest_firmware_id(self, firmware_id):
+        max_id = self.get_field_max_value_int(firmware_info_col, 'firmware_id')
+        if max_id < custom_firmware_id_base:
+            suggest_id = custom_firmware_id_base
+        else:
+            suggest_id = max_id + 1
+        if firmware_id is None or int(firmware_id) < custom_firmware_id_base or self.exist_firmware_id(firmware_id):
+            return str(suggest_id)
+        else:
+            return firmware_id
+
+    def get_custom_id_base_int(self):
+        return custom_firmware_id_base
+
+    def get_custom_id_base(self):
+        return str(custom_firmware_id_base)
+
+    def query(self, offset, count):
+        result_cursor = firmware_info_col.find({}, {'_id': 0}).sort([("_id", pymongo.DESCENDING)])
+        item_list = list(result_cursor[offset: offset + count])
+        return item_list
+
+    def query_all(self):
+        count = self.info_count()
+        return self.query(0, count)
+
+    def fetch(self, firmware_id):
+        doc = firmware_info_col.find_one({'firmware_id': firmware_id}, {'_id': 0})
+        return doc
+
+    def filter(self, field, value):
+        if field in ['os', 'service', 'db', 'PLC']:
+            key = 'description'
+            # 针对厂商名称做英文转换
+            if value == '西门子':
+                value = 'siemens'
+            elif value == '施耐德':
+                value = 'schneider'
+            elif value == '菲尼克斯':
+                value = 'phoenix'
+            elif value == '通用电气' or value == '通用电气软件组态':
+                value = 'GE'
+        else:
+            return None
+
+        # 正则表达式匹配整个单词：re.compile(r'\b%s\b' % word, re.IGNORECASE)
+        # \b表示单词的开始和结束
+        result_cursor = firmware_info_col.find({key: re.compile(r'\b%s\b' % value, re.IGNORECASE)}, {'_id': 0})
+        return result_cursor
+
+    def search(self, value):
+        key = 'description'
+        # 正则表达式匹配特定字符串：re.compile(r'%s' % word, re.IGNORECASE)
+        result_cursor = firmware_info_col.find({key: re.compile(r'%s' % value, re.IGNORECASE)}, {'_id': 0}).sort(
+            [("_id", pymongo.DESCENDING)])
+        return result_cursor
+
+    def get_index_coll(self, field):
+        index_coll = None
+        field_name = 'name'
+        if field == 'author':
+            index_coll = common.config.g_author_coll
+        elif field == 'type':
+            index_coll = common.config.g_type_coll
+        elif field == 'platform':
+            index_coll = common.config.g_platform_coll
+            field_name = 'platform'
+        return index_coll, field_name
+
+    def fetch_field_id(self, field, value):
+        # 不同的字段对应不同的字段索引集合
+        index_coll, field_name = self.get_index_coll(field)
+        if index_coll is None:
+            return None
+        # 在字段索引集合中查找指定值是否已存在
+        item = index_coll.find_one({field_name: value})
+        if item is not None:
+            return item['id']
+
+        # 新的域值的ID取值，在现有数据的最大ID的基础上增加1
+        id = self.get_field_max_value_int(index_coll, 'id') + 1
+        id_str = str(id)
+        # 写入该条字段索引信息
+        result = index_coll.insert_one({'id': id_str, field_name: value})
+        return id_str
+
+    def exist_firmware_id(self, firmware_id):
+        item = firmware_info_col.find_one({'firmware_id': firmware_id})
+        return item is not None
+
+    def custom_firmware_id(self, firmware_id):
+        return int(firmware_id) >= custom_firmware_id_base
+
+    def add(self, item):
+        result = firmware_info_col.insert_one(item)
+        return result
+
+    def update(self, firmware_id, item):
+        result = firmware_info_col.update_one({'firmware_id': firmware_id}, {'$set': item})
+        return result
+
+    def delete(self, firmware_id):
+        result = firmware_info_col.delete_one({'firmware_id': firmware_id})
+        return result
+
+    def query_type(self):
+        result_cursor = common.config.g_type_coll.find({}, {'_id': 0})
+        return list(result_cursor)
+
+    def query_platform(self):
+        result_cursor = common.config.g_platform_coll.find({}, {'_id': 0})
+        return list(result_cursor)
+
+    def fetch_some(self, id_list):
+        docs = []
+        for firmware_id in id_list:
+            firmware_id = firmware_id.strip()
+            doc = self.fetch(firmware_id)
+            if doc is not None:
+                docs.append(doc)
+        return docs
+
+    def fetch_range(self, id_from, id_to):
+        where_from = 'NumberInt(obj.firmware_id) >= {}'.format(id_from)
+        where_to = 'NumberInt(obj.firmware_id) <= {}'.format(id_to)
+        result_cursor = firmware_info_col.find({'$and': [{'$where': where_from}, {'$where': where_to}]}, {'_id': 0})
+        docs = list(result_cursor)
+        return docs
+
+    def firmware_add(self, firmware_manufacturer, application_mode, firmware_size, pub_date, firmware_file_path):
+        # firmware_manufacturer = models.CharField(max_length=200)    #固件厂商
+        # application_mode = models.CharField(max_length=128)         #适用机型
+        # firmware_version = models.CharField(max_length=16)          #固件版本
+        # firmware_size = models.CharField(max_length=8)              #文件大小
+        # pub_date = models.DateTimeField('date published')           #发布日期
+        # firmware_file_path = models.CharField(max_length=255)       #本地存放路径
+        test = SysUtils.makedir("test")
+        return test
+
+
 class FirmwareDB:
 
     def info_count(self):
-        return firmware_col.count()
-
-    # firmware_manufacturer = models.CharField(max_length=200)    #固件厂商
-    # application_mode = models.CharField(max_length=128)         #适用机型
-    # firmware_version = models.CharField(max_length=16)          #固件版本
-    # firmware_size = models.CharField(max_length=8)              #文件大小
-    # pub_date = models.DateTimeField('date published')           #发布日期
-    # firmware_file_path = models.CharField(max_length=255)       #本地存放路径
-    def savedb(self, firmware_manufacturer, application_mode, firmware_size, pub_date, firmware_file_path):
-        test = SysUtils.makedir("test")
-        return test
+        return firmware_info_col.count()
 
     def fwdownload(self, homepage):
         # firmware的XX数据总数
