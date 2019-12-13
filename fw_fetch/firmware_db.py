@@ -133,6 +133,7 @@ class Firmware():
                     urls = re.findall(reg, rom_info_down)
                     print(urls[0])
 
+                    firmware_id = firmware_info_col.get_suggest_firmware_id(None)
                     # firmware_manufacturer = models.CharField(max_length=200)    #固件厂商
                     # application_mode = models.CharField(max_length=128)         #适用机型
                     # firmware_version = models.CharField(max_length=16)          #固件版本
@@ -145,7 +146,8 @@ class Firmware():
                             'fw_version': firmware_version,
                             'fw_size': firmware_size,
                             'pub_date': pub_date,
-                            'fw_file_path': "c:\\xxx"
+                            'fw_file_path': "c:\\xxx",
+                            'firmware_id': firmware_id
                             }
                     result = self.add(item)
 
