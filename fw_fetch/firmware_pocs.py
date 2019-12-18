@@ -32,8 +32,16 @@ class FirmwarePocs:
         if item is None:
             return None
 
-        # if item['content_type'] in ['txt']:
-        item['content'] = grid_out.read().decode('utf-8')
+        # data = grid_out.read().decode('utf-8')
+        data = grid_out.read()
+        # bin = bytes(data, encoding="utf8")
+        print(item['aliases'])
+
+        # save path file
+        outf = open(item['aliases'], 'wb')  # 创建文件
+        outf.write(data)
+        outf.close()
+
         # else:
         #     item['content'] = None
         item['firmware_id'] = firmware_id
@@ -49,7 +57,8 @@ class FirmwarePocs:
     def add(self, firmware_id, alias, content):
         type = SysUtils.parse_file_type(alias)
         # 更新POC到 GridFS 存储桶中
-        method_fs.put(content.encode(encoding="utf-8"), content_type=type, filename=firmware_id, aliases=[alias])
+        # method_fs.put(content.encode(encoding="utf-8"), content_type=type, filename=firmware_id, aliases=[alias])
+        method_fs.put(content, content_type=type, filename=firmware_id, aliases=[alias])
         return True
 
     def delete(self, firmware_id):

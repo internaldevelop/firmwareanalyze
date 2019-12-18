@@ -1,26 +1,19 @@
-from common.response import app_ok_p, app_err_p, app_ok, app_err
-from common.error_code import Error
-from common.utils.http_request import req_get_param_int, req_get_param, req_post_param, req_post_param_int, \
-    req_post_param_dict
 import common.config
 
-from common.utils.general import SysUtils
-
+from fw_fetch.firmware_pocs import FirmwarePocs
 import pymongo
 import re
 import requests
-import urllib.request
 import os
-from urllib.request import urlretrieve
-from bs4 import BeautifulSoup
-
 # firmware 信息集合
 firmware_info_col = common.config.g_firmware_info_col
+firmware_pocs = FirmwarePocs()
 
 # 自定义固件信息的 ID号的起始值为900,000
 custom_firmware_id_base = 900000
 
-class Firmware():
+
+class FirmwareDB:
 
     def __init__(self):
         self.headers = {
@@ -28,6 +21,10 @@ class Firmware():
         # self.base_url = 'http://www.luyoudashi.com'
         self.base_url = 'http://www.luyoudashi.com/roms/vendor-13350-' #1.html'
         self.base_path = os.path.dirname(__file__)
+
+    def info_count(self):
+        return firmware_info_col.count()
+
 
     def makedir(self, name):
         path = os.path.join(self.base_path, name)
@@ -43,165 +40,6 @@ class Firmware():
         r = requests.get(url, headers=self.headers)
         return r
 
-    def get_firmware(self, url_firmware, savepath):
-
-        try:
-
-            # self.makedir('firmware')
-
-            # 获取网页的源代码
-            # html = urllib.request.urlopen(self.base_url + str(page) + '.html')
-            html = urllib.request.urlopen(url_firmware)
-            content = html.read().decode('utf8')
-            html.close()
-
-            reg = r'<li class="rom_list"><a href="(.*)">(.*)</a>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-            reg = re.compile(reg)
-            urls = re.findall(reg, content)
-            for url in urls:
-                print(url[0])
-                print(url[1])
-                # http://www.luyoudashi.com/roms/romlist-m1823.html
-                               # a href = "/roms/romlist-m1823.html"
-                urlsub = 'http://www.luyoudashi.com' + url[0]
-                # urlsub = url_firmware + url[0]
-                html = urllib.request.urlopen(urlsub)
-                content1 = html.read().decode('utf8')
-                html.close()
-
-                soup = BeautifulSoup(content1, "html.parser")
-                ul = soup.find('ul', class_="rom_list_list")
-                ul = str(ul)
-                reg1 = r'<li><span>(.*)</span><a href="(.*)">(.*)</a>(.*)</li>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-                reg1 = re.compile(reg1)
-                targets = re.findall(reg1, ul)
-
-                # for ul in soup.find_all("<li><span>[.*]</span>"):
-                for ul in targets:
-                    print(ul[0])
-                    print(ul[1])
-                    print(ul[2])
-                    print(ul[3])
-
-                    urldownload = 'http://www.luyoudashi.com' + ul[1]
-                    html = urllib.request.urlopen(urldownload)
-                    content2 = html.read().decode('utf8')
-                    html.close()
-
-                    soup = BeautifulSoup(content2, "html.parser")
-                    rom_info_down = soup.find('div', class_="rom_info_down")
-                    print(rom_info_down)
-
-                    rom_info_data = soup.find('div', class_="rom_info_data")
-                    print(rom_info_data)
-
-                    rom_info_data = str(rom_info_data)
-                    reg = r'<p>固件厂商：.*</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-                    reg = re.compile(reg)
-                    v = re.findall(reg, rom_info_data)
-                    print(v[0])
-                    firmware_manufacturer = v[0]
-
-                    reg = r'<p>适用机型：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-                    reg = re.compile(reg)
-                    v = re.findall(reg, rom_info_data)
-                    print(v[0])
-                    application_mode = v[0]
-
-                    reg = r'<p>固件版本：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-                    reg = re.compile(reg)
-                    v = re.findall(reg, rom_info_data)
-                    print(v[0])
-                    firmware_version = v[0]
-
-                    reg = r'<p>文件大小：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-                    reg = re.compile(reg)
-                    v = re.findall(reg, rom_info_data)
-                    print(v[0])
-                    firmware_size = v[0]
-
-                    reg = r'<p>发布日期：(.*)</p>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-                    reg = re.compile(reg)
-                    v = re.findall(reg, rom_info_data)
-                    print(v[0])
-                    pub_date = v[0]
-
-
-                    rom_info_down = str(rom_info_down)
-                    reg = r'<a class="romdown" href="(.*)">立即下载固件</a>'  # 根据网站样式匹配的正则：(.* )可以匹配所有东西，加括号为我们需要的
-                    reg = re.compile(reg)
-                    urls = re.findall(reg, rom_info_down)
-                    print(urls[0])
-
-                    firmware_id = firmware_info_col.get_suggest_firmware_id(None)
-                    # firmware_manufacturer = models.CharField(max_length=200)    #固件厂商
-                    # application_mode = models.CharField(max_length=128)         #适用机型
-                    # firmware_version = models.CharField(max_length=16)          #固件版本
-                    # firmware_size = models.CharField(max_length=8)              #文件大小
-                    # pub_date = models.DateTimeField('date published')           #发布日期
-                    # firmware_file_path = models.CharField(max_length=255)       #本地存放路径
-                    # 组装固件信息，并添加
-                    item = {'fw_manufacturer': firmware_manufacturer,
-                            'application_mode': application_mode,
-                            'fw_version': firmware_version,
-                            'fw_size': firmware_size,
-                            'pub_date': pub_date,
-                            'fw_file_path': "c:\\xxx",
-                            'firmware_id': firmware_id
-                            }
-                    result = self.add(item)
-
-                    # filename = os.path.basename(urls[0])
-                    # # readme = savepath + "\\" + filename + ".txt"
-                    # readme = filename + ".txt"
-                    # with open(readme, "wb") as f:
-                    #     f.write(str(ul[0]))
-                    #     f.write(ul[1])
-                    #     f.write(ul[2])
-                    #     f.write(ul[3])
-                    # f.close()
-
-                    def download(url, savepath='./'):
-                        """
-                        download file from internet
-                        :param url: path to download from
-                        :param savepath: path to save files
-                        :return: None
-                        """
-
-                        def reporthook(a, b, c):
-                            """
-                            显示下载进度
-                            :param a: 已经下载的数据块
-                            :param b: 数据块的大小
-                            :param c: 远程文件大小
-                            :return: None
-                            """
-                            print("\rdownloading: %5.1f%%" % (a * b * 100.0 / c), end="")
-
-                        filename = os.path.basename(url)
-                        # 判断文件是否存在，如果不存在则下载
-                        if not os.path.isfile(os.path.join(savepath, filename)):
-                            print('Downloading data from %s' % url)
-                            urlretrieve(url, os.path.join(savepath, filename), reporthook=reporthook)
-                            print('\nDownload finished!')
-                        else:
-                            print('File already exsits!')
-                        # 获取文件大小
-                        filesize = os.path.getsize(os.path.join(savepath, filename))
-                        # 文件大小默认以Bytes计， 转换为Mb
-                        print('File size = %.2f Mb' % (filesize / 1024 / 1024))
-
-
-                    # download(urls[0], savepath)
-                    download(urls[0])
-                    break #只下载一个固件 ，全部下载耗时且占用磁盘空间大
-                break
-
-
-        except Exception as e:
-            print(e)
-
     def max_firmware_id(self):
         return self.get_field_max_value(firmware_info_col, 'firmware_id')
 
@@ -213,8 +51,11 @@ class Firmware():
         # 字段按照数字顺序整理：collation({'locale': 'zh', 'numericOrdering': True})
         res_curosr = coll.find({}, {'_id': 0, field: 1}). \
             collation({'locale': 'zh', 'numericOrdering': True}).sort(field, -1)
+        # if list(res_curosr).__len__() > 0:
         item = list(res_curosr)[0]
         return item[field]
+        # else:
+        #     return 0
 
     def get_field_max_value_int(self, coll, field):
         return int(self.get_field_max_value(coll, field))
@@ -348,127 +189,4 @@ class Firmware():
         result_cursor = firmware_info_col.find({'$and': [{'$where': where_from}, {'$where': where_to}]}, {'_id': 0})
         docs = list(result_cursor)
         return docs
-
-    def firmware_add(self, firmware_manufacturer, application_mode, firmware_size, pub_date, firmware_file_path):
-        # firmware_manufacturer = models.CharField(max_length=200)    #固件厂商
-        # application_mode = models.CharField(max_length=128)         #适用机型
-        # firmware_version = models.CharField(max_length=16)          #固件版本
-        # firmware_size = models.CharField(max_length=8)              #文件大小
-        # pub_date = models.DateTimeField('date published')           #发布日期
-        # firmware_file_path = models.CharField(max_length=255)       #本地存放路径
-        test = SysUtils.makedir("test")
-        return test
-
-
-class FirmwareDB:
-
-    def info_count(self):
-        return firmware_info_col.count()
-
-    def fwdownload(self, homepage):
-        # firmware的XX数据总数
-        # total = self.info_count()
-
-        # 爬取下载固件
-        firmware = Firmware()
-
-        # 普联 TP-Link
-        savepath = "TP-Link"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-13350-"
-        # html = urllib.request.urlopen(self.base_url + str(page) + '.html')
-        for i in range(5):  # 控制爬取的页数
-            # firmware.get_firmware(url, i+1)
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 水星 Mercury
-        savepath = "Mercury"
-        firmware.makedir(savepath)
-        # url = "http://www.luyoudashi.com/roms/vendor-8080-"
-        url = homepage + "/roms/vendor-8080-"
-        for i in range(2):  # 控制爬取的页数
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 智能固件 OpenWRT
-        # 迅捷 Fast
-        savepath = "Fast"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-4588.html"
-        firmware.get_firmware(url, savepath)
-
-        # 斐讯 Phicomm  http://www.luyoudashi.com/roms/vendor-11367.html
-        savepath = "Phicomm"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-11367-"
-        for i in range(2):  # 控制爬取的页数
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 腾达 Tenda
-        savepath = "Tenda"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-12997-"
-        for i in range(4):  # 控制爬取的页数
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 磊科 Netcore
-        savepath = "Netcore"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-8806-"
-        for i in range(2):  # 控制爬取的页数
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 网件 NETGEAR
-        savepath = "NETGEAR"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-8819-"
-        for i in range(2):  # 控制爬取的页数
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 小米 Xiaomi
-        savepath = "Xiaomi"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-14593.html"
-        firmware.get_firmware(url, savepath)
-
-        # D-Link   固件下载
-        savepath = "D-Link"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-3132-"
-        for i in range(2):  # 控制爬取的页数
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 极路由 HiWiFi
-        savepath = "HiWiFi"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-16501.html"
-        for i in range(2):  # 控制爬取的页数
-            url = url + str(i+1) + ".html"
-            firmware.get_firmware(url, savepath)
-            break
-
-        # 新路由 Newifi
-        savepath = "Newifi"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-16502.html"
-        firmware.get_firmware(url, savepath)
-
-        # 华硕 ASUS
-        savepath = "ASUS"
-        firmware.makedir(savepath)
-        url = homepage + "/roms/vendor-1130.html"
-        firmware.get_firmware(url, savepath)
 

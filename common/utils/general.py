@@ -1,8 +1,12 @@
 from dateutil.relativedelta import relativedelta
 import json
 from datetime import date, datetime, timedelta
-import os.path
 
+import os
+import tarfile
+import os.path
+import zipfile
+import rarfile
 
 def enum(*args):
     enums = dict(zip(args, range(len(args))))
@@ -11,16 +15,16 @@ def enum(*args):
 
 class SysUtils:
 
-    @staticmethod
-    def makedir(self, name):
-        path = os.path.join(self.base_path, name)
-        isExist = os.path.exists(path)
-        if not isExist:
-            os.makedirs(path)
-            print("File has been created.")
-        else:
-            print('OK!The file is existed. You do not need create a new one.')
-        os.chdir(path)
+    # @staticmethod
+    # def makedir(self, name):
+    #     path = os.path.join(self.base_path, name)
+    #     isExist = os.path.exists(path)
+    #     if not isExist:
+    #         os.makedirs(path)
+    #         print("File has been created.")
+    #     else:
+    #         print('OK!The file is existed. You do not need create a new one.')
+    #     os.chdir(path)
 
     @staticmethod
     def get_now_time():
@@ -113,6 +117,41 @@ class SysUtils:
         if type is None:
             type = 'unknown'
         return type
+
+    # 解压tgz压缩文件
+
+    def un_tgz(filename):
+        tar = tarfile.open(filename)
+        # 判断同名文件夹是否存在，若不存在则创建同名文件夹
+        if os.path.isdir(os.path.splitext(filename)[0]):
+            pass
+        else:
+            os.mkdir(os.path.splitext(filename)[0])
+        tar.extractall(os.path.splitext(filename)[0])
+        tar.close()
+
+    def un_tar(file_name):
+        # untar zip file"""
+        tar = tarfile.open(file_name)
+        names = tar.getnames()
+        if os.path.isdir(file_name + "_files"):
+            pass
+        else:
+            os.mkdir(file_name + "_files")
+        #由于解压后是许多文件，预先建立同名文件夹
+        for name in names:
+            tar.extract(name, file_name + "_files/")
+        tar.close()
+
+    #解压rar压缩包
+    def un_rar(filename):
+        rar = rarfile.RarFile(filename)
+        #判断同名文件夹是否存在，若不存在则创建同名文件夹
+        if os.path.isdir(os.path.splitext(filename)[0]):
+            pass
+        else:
+            os.mkdir(os.path.splitext(filename)[0])
+        rar.extractall(os.path.splitext(filename)[0])
 
 
 class TimeEncoder(json.JSONEncoder):

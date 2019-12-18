@@ -8,5 +8,6 @@ urlpatterns = [
     # 指定URL抓取固件
     path('download/', views.fwdownload, name='firmware_download'),
     path('downloadtest/', views.test, name='firmware_test'),
+    path('poc/fetch/', views.poc_fetch, name='firmware_poc_fetch')
 
 ]
