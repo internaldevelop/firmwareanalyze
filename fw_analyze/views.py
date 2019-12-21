@@ -11,6 +11,7 @@ import binwalk
 def index(request):
     return HttpResponse("Hello firmware analyze.")
 
+# 固件文件头自动解码或解析
 def binwalk_scan_signature(request):
     filename = req_get_param(request, 'filename')
     try:
@@ -27,7 +28,7 @@ def binwalk_scan_opcodes(request):
     filename = req_get_param(request, 'filename')
     #print(filename)
     # filename = "D:/code/work/firmwareanalyze/HC5611.bin"
-    structure = '';
+    structure = ''
     try:
         for module in binwalk.scan(filename, opcodes=True, quiet=True):
             print("%s Results:" % module.name)
@@ -35,16 +36,16 @@ def binwalk_scan_opcodes(request):
                 print("\t%s    0x%.8X    %s" % (result.file.path, result.offset, result.description))
                 if ("X86" in result.description):
                     structure = 'X86'
-                    break;
+                    break
                 elif ("ARM" in result.description):
                     structure = "ARM"
-                    break;
+                    break
                 elif ("MIPS" in result.description):
                     structure = "MIPS"
-                    break;
+                    break
                 else:
                     structure = "PowerPC"
-                    break;
+                    break
     except binwalk.ModuleException as e:
         print("Critical failure:", e)
         return app_err(Error.INTERNAL_EXCEPT)
@@ -55,6 +56,31 @@ def binwalk_file_extract(request):
     filename = req_get_param(request, 'filename')
     try:
         for module in binwalk.scan(filename, signature=True, quiet=True, extract=True):
+            for result in module.results:
+                if result.file.path in module.extractor.output:
+                    # These are files that binwalk carved out of the original firmware image, a la dd
+                    if result.offset in module.extractor.output[result.file.path].carved:
+                        print
+                        "Carved data from offset 0x%X to %s" % (
+                        result.offset, module.extractor.output[result.file.path].carved[result.offset])
+                    # These are files/directories created by extraction utilities (gunzip, tar, unsquashfs, etc)
+                    if result.offset in module.extractor.output[result.file.path].extracted:
+                        print
+                        "Extracted %d files from offset 0x%X to '%s' using '%s'" % (
+                        len(module.extractor.output[result.file.path].extracted[result.offset].files),
+                        result.offset,
+                        module.extractor.output[result.file.path].extracted[result.offset].files[0],
+                        module.extractor.output[result.file.path].extracted[result.offset].command)
+    except binwalk.ModuleException as e:
+        print("Critical failure:", e)
+        return app_err(Error.INTERNAL_EXCEPT)
+    return app_ok_p({'extract': 'ok',})
+
+
+def binwalk_file_test(request):
+    filename = req_get_param(request, 'filename')
+    try:
+        for module in binwalk.scan(filename, filesystem=True, quiet=True):
             for result in module.results:
                 if result.file.path in module.extractor.output:
                     # These are files that binwalk carved out of the original firmware image, a la dd

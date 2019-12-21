@@ -7,6 +7,13 @@ import tarfile
 import os.path
 import zipfile
 import rarfile
+import patoolib
+import py7zr
+# from easy7zip import easy7zip
+# from py7zr import pack_7zarchvie, unpack_7zarchive
+from py7zr import unpack_7zarchive
+import shutil
+
 
 def enum(*args):
     enums = dict(zip(args, range(len(args))))
@@ -152,6 +159,36 @@ class SysUtils:
         else:
             os.mkdir(os.path.splitext(filename)[0])
         rar.extractall(os.path.splitext(filename)[0])
+
+
+    def un_zip(filename):
+        # zip_file2_path = r'F:\tk_demo.zip'
+        # zipfile提供的压缩方法有：
+        # ZIP_STORED，ZIP_DEFLATED， ZIP_BZIP2和ZIP_LZMA
+        # ZIP_STOREED：只是作为一种存储，实际上并未压缩
+        # ZIP_DEFLATED：用的是gzip压缩算法
+        # ZIP_BZIP2：用的是bzip2压缩算法
+        # ZIP_LZMA：用的是lzma压缩算法
+        unzip_files = zipfile.ZipFile(filename, mode='r', compression=zipfile.ZIP_STORED)
+        unzip_files.extractall()
+        unzip_files.close()
+
+    def un_patool(filename):
+        # patoolib.extract_archive(filename, outdir="/tmp")
+        patoolib.extract_archive(filename)
+
+    def un_py7zr(filename):
+        extract_dir = os.getcwd()
+        type = py7zr.is_7zfile(filename)
+        ret = py7zr.unpack_7zarchive(filename, extract_dir)
+        print(ret)
+
+    def un_7z(filename):
+        # register file format at first.
+        # shutil.register_archive_format('7zip', pack_7zarchive, description='7zip archive')
+        shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
+        # extraction
+        shutil.unpack_archive(filename)
 
 
 class TimeEncoder(json.JSONEncoder):

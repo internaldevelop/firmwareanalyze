@@ -28,6 +28,20 @@ def main():
                                        # 返回类型，默认为 `string`，可以传入 `json`，如果传入值是 `json`，那么该方法会返回一个 `dict` 对象
                                        return_type="string")
         print("result of other service" + res)
+
+        errorcode = eureka_client.do_service("SYSTEM-CODE", "/sys_code/err_codes/all",
+                                       # 返回类型，默认为 `string`，可以传入 `json`，如果传入值是 `json`，那么该方法会返回一个 `dict` 对象
+                                       return_type="string")
+        print("system-code all:" + errorcode)
+
+        # syslog = eureka_client.do_service("SYSTEM-LOG", "/sys_log/add",
+        #                                # 返回类型，默认为 `string`，可以传入 `json`，如果传入值是 `json`，那么该方法会返回一个 `dict` 对象
+        #                                return_type="string")
+        # print("system-log:" + syslog)
+
+
+
+
     except ZeroDivisionError as e:
         print('except:', e)
 

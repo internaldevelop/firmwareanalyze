@@ -7,8 +7,10 @@ from common.utils.general import SysUtils
 
 import pymongo
 import re
+import os
+import zipfile
 
-# 利用方法存储桶
+# 固件文件方法存储桶
 method_fs = common.config.g_firmware_method_fs
 
 
@@ -32,18 +34,18 @@ class FirmwarePocs:
         if item is None:
             return None
 
-        # data = grid_out.read().decode('utf-8')
         data = grid_out.read()
-        # bin = bytes(data, encoding="utf8")
         print(item['aliases'])
 
         # save path file
-        outf = open(item['aliases'], 'wb')  # 创建文件
+        filename = item['aliases']
+        outf = open(filename, 'wb')  # 创建文件
         outf.write(data)
         outf.close()
 
-        # else:
-        #     item['content'] = None
+        # uncompress zip
+        SysUtils.un_py7zr(filename)
+
         item['firmware_id'] = firmware_id
         return item
 

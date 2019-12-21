@@ -27,6 +27,16 @@ firmware_pocs = FirmwarePocs()
 def index(request):
     return HttpResponse("Hello firmware fetch.")
 
+
+def test(request):
+    print("run into test")
+    filename = 'C:/GIT/firmwareanalyze/fw_fetch/TP-Link/TL-WVR900L_V1.0_161207.zip'
+    # SysUtils.un_tgz(filename)
+    # SysUtils.un_tar(filename)
+    # SysUtils.un_rar(filename)
+    return app_ok_p('Test OK.')
+
+# 1.1 指定URL下载固件
 def fwdownload(request):
     print("run into fwdownload")
     homepage = req_get_param(request, 'url')
@@ -81,86 +91,74 @@ def fwdownload(request):
         url = url + str(i+1) + ".html"
         get_firmware(url, savepath)
         break
-    #
-    # # 磊科 Netcore
-    # savepath = "Netcore"
-    # firmware.makedir(savepath)
-    # url = homepage + "/roms/vendor-8806-"
-    # for i in range(2):  # 控制爬取的页数
-    #     url = url + str(i+1) + ".html"
-    #     firmware.get_firmware(url, savepath)
-    #     break
-    #
-    # # 网件 NETGEAR
-    # savepath = "NETGEAR"
-    # firmware.makedir(savepath)
-    # url = homepage + "/roms/vendor-8819-"
-    # for i in range(2):  # 控制爬取的页数
-    #     url = url + str(i+1) + ".html"
-    #     firmware.get_firmware(url, savepath)
-    #     break
-    #
-    # # 小米 Xiaomi
-    # savepath = "Xiaomi"
-    # firmware.makedir(savepath)
-    # url = homepage + "/roms/vendor-14593.html"
-    # firmware.get_firmware(url, savepath)
-    #
-    # # D-Link   固件下载
-    # savepath = "D-Link"
-    # firmware.makedir(savepath)
-    # url = homepage + "/roms/vendor-3132-"
-    # for i in range(2):  # 控制爬取的页数
-    #     url = url + str(i+1) + ".html"
-    #     firmware.get_firmware(url, savepath)
-    #     break
-    #
-    # # 极路由 HiWiFi
-    # savepath = "HiWiFi"
-    # firmware.makedir(savepath)
-    # url = homepage + "/roms/vendor-16501.html"
-    # for i in range(2):  # 控制爬取的页数
-    #     url = url + str(i+1) + ".html"
-    #     firmware.get_firmware(url, savepath)
-    #     break
-    #
-    # # 新路由 Newifi
-    # savepath = "Newifi"
-    # firmware.makedir(savepath)
-    # url = homepage + "/roms/vendor-16502.html"
-    # firmware.get_firmware(url, savepath)
-    #
-    # # 华硕 ASUS
-    # savepath = "ASUS"
-    # firmware.makedir(savepath)
-    # url = homepage + "/roms/vendor-1130.html"
-    # firmware.get_firmware(url, savepath)
+
+    # 磊科 Netcore
+    savepath = "Netcore"
+    firmware_db.makedir(savepath)
+    url = homepage + "/roms/vendor-8806-"
+    for i in range(2):  # 控制爬取的页数
+        url = url + str(i+1) + ".html"
+        get_firmware(url, savepath)
+        break
+
+    # 网件 NETGEAR
+    savepath = "NETGEAR"
+    firmware_db.makedir(savepath)
+    url = homepage + "/roms/vendor-8819-"
+    for i in range(2):  # 控制爬取的页数
+        url = url + str(i+1) + ".html"
+        get_firmware(url, savepath)
+        break
+
+    # 小米 Xiaomi
+    savepath = "Xiaomi"
+    firmware_db.makedir(savepath)
+    url = homepage + "/roms/vendor-14593.html"
+    get_firmware(url, savepath)
+
+    # D-Link   固件下载
+    savepath = "D-Link"
+    firmware_db.makedir(savepath)
+    url = homepage + "/roms/vendor-3132-"
+    for i in range(2):  # 控制爬取的页数
+        url = url + str(i+1) + ".html"
+        get_firmware(url, savepath)
+        break
+
+    # 极路由 HiWiFi
+    savepath = "HiWiFi"
+    firmware_db.makedir(savepath)
+    url = homepage + "/roms/vendor-16501.html"
+    for i in range(2):  # 控制爬取的页数
+        url = url + str(i+1) + ".html"
+        get_firmware(url, savepath)
+        break
+
+    # 新路由 Newifi
+    savepath = "Newifi"
+    firmware_db.makedir(savepath)
+    url = homepage + "/roms/vendor-16502.html"
+    get_firmware(url, savepath)
+
+    # 华硕 ASUS
+    savepath = "ASUS"
+    firmware_db.makedir(savepath)
+    url = homepage + "/roms/vendor-1130.html"
+    get_firmware(url, savepath)
     # if fwdownload is None:
     #     return app_err(Error.FAIL_QUERY)
     # else:
     return app_ok_p('OK')
 
+# 1.2 查询固件列表
+def list(reuqest):
+    # 获取信息总数
+    total = firmware_db.info_count()
 
-# def fetch(request):
-#     firmware_id = req_get_param(request, 'firmware_id')
-#     if StrUtils.is_blank(firmware_id):
-#         return app_err(Error.INVALID_REQ_PARAM)
-#     doc = firmware_db.fetch(firmware_id)
-#     if doc is None:
-#         # #SysLog.fail('提取漏洞', '没有提取到漏洞信息（ID={}）'.format(firmware_id))
-#         return app_err(Error.firmware_id_NOT_FOUND)
-#     # #SysLog.success('提取漏洞', '成功提取漏洞信息（ID={}）'.format(firmware_id))
-#     return app_ok_p(doc)
-
-
-def test(request):
-    print("run into test")
-    filename = 'C:/GIT/firmwareanalyze/fw_fetch/TP-Link/TL-WVR900L_V1.0_161207.zip'
-    # SysUtils.un_tgz(filename)
-    # SysUtils.un_tar(filename)
-    # SysUtils.un_rar(filename)
-
-    return app_ok_p('Test OK.')
+    # 读取固件信息
+    docs = firmware_db.query(0, total)
+    #SysLog.success('查询漏洞', '成功查询漏洞信息，查询到漏洞信息总数={}'.format(len(docs)))
+    return app_ok_p({'total': total, 'count': len(docs), 'items': docs})
 
 
 def query(request):
@@ -345,19 +343,18 @@ def poc_query(request):
     #SysLog.success('查询POC', '成功查询漏洞的POC，总数={}'.format(len(docs)))
     return app_ok_p({'total': total, 'count': len(docs), 'items': docs})
 
-
+# 1.3 根据指定ID读取固件
 def poc_fetch(request):
     firmware_id = req_get_param(request, 'firmware_id')
-    doc = firmware_db.fetch(firmware_id)
+    # doc = firmware_db.fetch(firmware_id)
     poc = firmware_pocs.fetch(firmware_id)
-    if doc is None:
+    if poc is None:
         return app_err(Error.EDB_POC_NOT_FOUND)
-    print(poc.aliases)
-    print(poc[1])
+    print(poc['aliases'])
 
     #SysLog.success('提取POC', '成功提取漏洞的POC（漏洞ID={}）'.format(firmware_id))
     # doc['poc'] = poc
-    return app_ok_p(doc)
+    return app_ok_p(poc)
 
 
 def poc_add(request):
