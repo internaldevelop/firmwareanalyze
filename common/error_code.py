@@ -18,6 +18,8 @@ err = [
     {'code': 1014, 'msg': '找不到指定ID的漏洞信息'},
     {'code': 1015, 'msg': '漏洞信息ID号不符合要求'},
     {'code': 1016, 'msg': '操作只能适用于定制的漏洞信息（ID号不符合要求）'},
+    {'code': 1017, 'msg': '未识别的文件下载类型'},
+
     {'code': 9999, 'msg': '未知错误'},
 ]
 
@@ -38,6 +40,7 @@ Error = enum(
     'EDB_ID_NOT_FOUND',
     'INVALID_EDB_ID',
     'NEED_CUSTOM_EDB_ID',
+    'UNKNOWN_FILE_TYPE',
     'UNKNOWN',
 )
 

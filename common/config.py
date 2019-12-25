@@ -6,8 +6,8 @@ from gridfs import GridFS
 # EDB_TYPE = 2
 #
 # mongo-db客户端
-# g_mongo_client = pymongo.MongoClient("mongodb://admin:123456@172.16.113.73:27017/")
-g_mongo_client = pymongo.MongoClient("mongodb://admin:123456@192.168.199.244:27017/")
+g_mongo_client = pymongo.MongoClient("mongodb://admin:123456@172.16.113.73:27017/")
+# g_mongo_client = pymongo.MongoClient("mongodb://admin:123456@192.168.199.244:27017/")
 
 # 系统管理数据库
 g_sys_manage_db = g_mongo_client["system_manage"]
@@ -33,6 +33,7 @@ g_author_coll = g_author_coll_full
 g_type_coll = g_type_coll_full
 g_platform_coll = g_platform_coll_full
 
+g_firmware_filepath = ''
 # if EDB_TYPE == 1:
 #     # 完整数据库
 #     g_exploit_db = g_exploit_db_full

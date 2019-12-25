@@ -52,10 +52,11 @@ class FirmwareDB:
         res_curosr = coll.find({}, {'_id': 0, field: 1}). \
             collation({'locale': 'zh', 'numericOrdering': True}).sort(field, -1)
         # if list(res_curosr).__len__() > 0:
-        item = list(res_curosr)[0]
-        return item[field]
-        # else:
-        #     return 0
+        if res_curosr.count() > 0:
+            item = list(res_curosr)[0]
+            return item[field]
+        else:
+            return 0
 
     def get_field_max_value_int(self, coll, field):
         return int(self.get_field_max_value(coll, field))

@@ -178,10 +178,20 @@ class SysUtils:
         patoolib.extract_archive(filename)
 
     def un_py7zr(filename):
-        extract_dir = os.getcwd()
-        type = py7zr.is_7zfile(filename)
-        ret = py7zr.unpack_7zarchive(filename, extract_dir)
-        print(ret)
+        extract_dir = os.getcwd() + "\\firmware"
+        if os.path.isdir(extract_dir):
+            pass
+        else:
+            os.mkdir(extract_dir)
+
+        is7z = py7zr.is_7zfile(filename)
+        py7zr.SevenZipFile
+        if is7z:
+            ret = py7zr.unpack_7zarchive(filename, extract_dir)
+            print(ret)
+        else:
+            print('unknow file type')
+        return extract_dir
 
     def un_7z(filename):
         # register file format at first.

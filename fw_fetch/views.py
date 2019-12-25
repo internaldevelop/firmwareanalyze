@@ -36,6 +36,7 @@ def test(request):
     # SysUtils.un_rar(filename)
     return app_ok_p('Test OK.')
 
+
 # 1.1 指定URL下载固件
 def fwdownload(request):
     print("run into fwdownload")
@@ -149,6 +150,82 @@ def fwdownload(request):
     #     return app_err(Error.FAIL_QUERY)
     # else:
     return app_ok_p('OK')
+
+
+# 1.1 指定URL下载固件
+def fwdownloadex(request):
+    print("run into fwdownload")
+    homepage = req_get_param(request, 'url')
+    print(homepage)
+    savepath = os.getcwd() + "\\firmware"
+    if os.path.isdir(savepath):
+        pass
+    else:
+        os.mkdir(savepath)
+
+    firmware_id = firmware_db.get_suggest_firmware_id(None)
+    item = {
+        # 'fw_manufacturer': firmware_manufacturer,
+        # 'application_mode': application_mode,
+        # 'fw_version': firmware_version,
+        # 'fw_size': firmware_size,
+        # 'pub_date': pub_date,
+        # 'fw_file_name': filename,
+        'firmware_id': firmware_id
+            }
+    try:
+        """
+        download file from internet
+        :param url: path to download from
+        :param savepath: path to save files
+        :return: None
+        """
+        def reporthook(a, b, c):
+            """
+            显示下载进度
+            :param a: 已经下载的数据块
+            :param b: 数据块的大小
+            :param c: 远程文件大小
+            :return: None
+            """
+            print("\rdownloading: %5.1f%%" % (a * b * 100.0 / c), end="")
+
+        filename = os.path.basename(homepage)
+        # 判断是否为合法下载文件名 .zip .bin .img .rar .exe ...
+        filetype = 'zip,bin,img,rar,exe'
+        file_list = filename.split('.')
+        result = file_list[file_list.__len__() - 1] in filetype
+        print(result)
+        if not result:
+            return app_err_p(Error.UNKNOWN_FILE_TYPE, {'filetype': file_list[file_list.__len__() - 1]})
+
+        # 判断文件是否存在，如果不存在则下载
+        if not os.path.isfile(os.path.join(savepath, filename)):
+            print('Downloading data from %s' % homepage)
+            urlretrieve(homepage, os.path.join(savepath, filename), reporthook=reporthook)
+
+            item['fw_file_name'] = filename
+            item['application_mode'] = file_list[0]
+            item['fw_manufacturer'] = ''
+            firmware_db.add(item)
+
+            pathfilename = savepath+"\\"+filename
+            with open(pathfilename, 'rb') as myimage:
+                data = myimage.read()
+                firmware_pocs.add(firmware_id, filename, data)
+
+            print('\nDownload finished!')
+        else:
+            print('File already exsits!')
+        # 获取文件大小
+        filesize = os.path.getsize(os.path.join(savepath, filename))
+        # 文件大小默认以Bytes计， 转换为Mb
+        print('File size = %.2f Mb' % (filesize / 1024 / 1024))
+        return app_ok_p('OK')
+    except Exception as e:
+        print(e)
+        return app_err(e)
+
 
 # 1.2 查询固件列表
 def list(reuqest):
@@ -686,3 +763,4 @@ def get_firmware(url_firmware, savepath):
             break
     except Exception as e:
         print(e)
+
