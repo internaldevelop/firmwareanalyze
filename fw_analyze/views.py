@@ -3,7 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 from common.utils.http_request import req_get_param
-from common.response import app_ok_p, app_err
+from common.response import app_ok_p, app_err, sys_app_ok_p
 from common.error_code import Error
 import binwalk
 
@@ -21,7 +21,7 @@ def binwalk_scan_signature(request):
                 print("\t%s    0x%.8X    %s" % (result.file.path, result.offset, result.description))
     except binwalk.ModuleException as e:
         print("Critical failure:", e)
-    return app_ok_p('binwalk OK.')
+    return sys_app_ok_p('binwalk OK.')
 
 # 架构识别
 def binwalk_scan_opcodes(request):

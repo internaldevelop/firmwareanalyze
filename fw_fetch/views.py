@@ -1,7 +1,8 @@
 # Create your views here.
 import time
-from common.response import app_ok_p, app_err_p, app_ok, app_err
+from common.response import app_ok_p, app_err_p, app_ok, app_err, sys_app_ok_p, sys_app_err_p, sys_app_ok, sys_app_err
 from common.error_code import Error
+
 from common.utils.http_request import req_get_param_int, req_get_param, req_post_param, req_post_param_int, req_post_param_dict
 from common.utils.general import SysUtils
 from common.utils.strutil import StrUtils
@@ -34,7 +35,7 @@ def test(request):
     # SysUtils.un_tgz(filename)
     # SysUtils.un_tar(filename)
     # SysUtils.un_rar(filename)
-    return app_ok_p('Test OK.')
+    return sys_app_ok_p('test ok')
 
 
 # 1.1 指定URL下载固件
@@ -149,11 +150,12 @@ def fwdownload(request):
     # if fwdownload is None:
     #     return app_err(Error.FAIL_QUERY)
     # else:
-    return app_ok_p('OK')
+    return sys_app_ok_p('ERROR_OK')
 
 
 # 1.1 指定URL下载固件
 def fwdownloadex(request):
+    # print(Sys_code_err)
     print("run into fwdownload")
     homepage = req_get_param(request, 'url')
     print(homepage)
@@ -197,7 +199,10 @@ def fwdownloadex(request):
         result = file_list[file_list.__len__() - 1] in filetype
         print(result)
         if not result:
-            return app_err_p(Error.UNKNOWN_FILE_TYPE, {'filetype': file_list[file_list.__len__() - 1]})
+            # return app_err_p(Error.UNKNOWN_FILE_TYPE, {'filetype': file_list[file_list.__len__() - 1]})
+
+            # UNKNOWN_FILE_TYPE
+            return sys_app_err_p('ERROR_GENERAL_ERROR', {'filetype': file_list[file_list.__len__() - 1]})
 
         # 判断文件是否存在，如果不存在则下载
         if not os.path.isfile(os.path.join(savepath, filename)):
@@ -221,10 +226,10 @@ def fwdownloadex(request):
         filesize = os.path.getsize(os.path.join(savepath, filename))
         # 文件大小默认以Bytes计， 转换为Mb
         print('File size = %.2f Mb' % (filesize / 1024 / 1024))
-        return app_ok_p('OK')
+        return sys_app_ok_p('ERROR_OK')
     except Exception as e:
         print(e)
-        return app_err(e)
+        return sys_app_err(e)
 
 
 # 1.2 查询固件列表
@@ -544,50 +549,6 @@ def max_id(request):
     max_id = firmware_db.max_firmware_id()
     return app_ok_p({'max_id': max_id})
 
-#
-# def export_excel(request):
-#     id_list_str = req_get_param(request, 'id_list')
-#     start_index = req_get_param(request, 'start_index')
-#     start_index = StrUtils.to_int(start_index, 1)
-#     # ID号区间查询因为需要先在整个集合把firmware_id转为整数，速度较慢，关闭不用
-#     # id_from = req_get_param(request, 'id_from')
-#     # id_to = req_get_param(request, 'id_to')
-#
-#     if id_list_str is not None:
-#         id_list = id_list_str.split(',')
-#         item_list = firmware_db.fetch_some(id_list)
-#     # elif not StrUtils.is_blank(id_from) and not StrUtils.is_blank(id_to):
-#     #     item_list = firmware_db.fetch_range(id_from, id_to)
-#     else:
-#         item_list = firmware_db.query_all()
-#
-#     file_name = XlsUtils.write_excel(item_list, start_index)
-#     xls_file = open(file_name, "rb")
-#     response = FileResponse(xls_file)
-#     response['Content-Type'] = 'application/octet-stream'
-#     response['Content-Disposition'] = 'attachment;filename="%s"' % file_name
-#     #SysLog.success('导出', '成功导出excel文件，漏洞ID={}'.format(id_list_str))
-#     return response
-#
-#
-# def stat_verified(request):
-#     stat = edb_stat.verified_stat()
-#     return app_ok_p(stat)
-#
-#
-# def stat_years(request):
-#     stat = edb_stat.years_stat()
-#     return app_ok_p(stat)
-#
-#
-# def stat_platform(request):
-#     stat = edb_stat.platform_stat()
-#     return app_ok_p(stat)
-#
-#
-# def stat_type(request):
-#     stat = edb_stat.type_stat()
-#     return app_ok_p(stat)
 
 def get_firmware(url_firmware, savepath):
 
