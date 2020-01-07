@@ -199,10 +199,8 @@ def fwdownloadex(request):
         result = file_list[file_list.__len__() - 1] in filetype
         print(result)
         if not result:
-            # return app_err_p(Error.UNKNOWN_FILE_TYPE, {'filetype': file_list[file_list.__len__() - 1]})
-
-            # UNKNOWN_FILE_TYPE
-            return sys_app_err_p('ERROR_GENERAL_ERROR', {'filetype': file_list[file_list.__len__() - 1]})
+            #
+            return sys_app_err_p('ERROR_FETCH_FILE_TYPE', {'filetype': file_list[file_list.__len__() - 1]})
 
         # 判断文件是否存在，如果不存在则下载
         if not os.path.isfile(os.path.join(savepath, filename)):
@@ -240,7 +238,7 @@ def list(reuqest):
     # 读取固件信息
     docs = firmware_db.query(0, total)
     #SysLog.success('查询漏洞', '成功查询漏洞信息，查询到漏洞信息总数={}'.format(len(docs)))
-    return app_ok_p({'total': total, 'count': len(docs), 'items': docs})
+    return sys_app_ok_p({'total': total, 'count': len(docs), 'items': docs})
 
 
 def query(request):
@@ -262,11 +260,11 @@ def query(request):
 def fetch(request):
     firmware_id = req_get_param(request, 'firmware_id')
     if StrUtils.is_blank(firmware_id):
-        return app_err(Error.INVALID_REQ_PARAM)
+        return sys_app_err('ERROR_INVALID_PARAMETER')
     doc = firmware_db.fetch(firmware_id)
     if doc is None:
         #SysLog.fail('提取漏洞', '没有提取到漏洞信息（ID={}）'.format(firmware_id))
-        return app_err(Error.firmware_id_NOT_FOUND)
+        return sys_app_err('ERROR_FWID_NOT_FOUND')
     #SysLog.success('提取漏洞', '成功提取漏洞信息（ID={}）'.format(firmware_id))
     return app_ok_p(doc)
 
@@ -431,12 +429,12 @@ def poc_fetch(request):
     # doc = firmware_db.fetch(firmware_id)
     poc = firmware_pocs.fetch(firmware_id)
     if poc is None:
-        return app_err(Error.EDB_POC_NOT_FOUND)
+        return sys_app_err('ERROR_FWPOC_NOT_FOUND')
     print(poc['aliases'])
 
     #SysLog.success('提取POC', '成功提取漏洞的POC（漏洞ID={}）'.format(firmware_id))
     # doc['poc'] = poc
-    return app_ok_p(poc)
+    return sys_app_ok_p(poc)
 
 
 def poc_add(request):
@@ -526,14 +524,14 @@ def poc_search(request):
         item['poc'] = poc
         # poc_list.append(poc)
     #SysLog.success('搜索POC', '成功搜索POC文件，总数={}'.format(len(item_list)))
-    return app_ok_p({'total': total, 'count': len(item_list), 'items': item_list})
+    return sys_app_ok_p({'total': total, 'count': len(item_list), 'items': item_list})
 
 
 def poc_download(request):
     firmware_id = req_get_param(request, 'firmware_id')
     item = firmware_pocs.fetch(firmware_id)
     if item is None:
-        return app_err(Error.EDB_POC_NOT_FOUND)
+        return sys_app_err('ERROR_FWPOC_NOT_FOUND')
 
     file_name = item['aliases']
     # 对文本类型的文件名称增加txt后缀

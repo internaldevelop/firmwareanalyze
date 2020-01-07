@@ -13,8 +13,14 @@ def main():
         # print(Sys_code_err)
 
         # EUREKA接口
-        eureka_server_list = "http://localhost:10100/eureka/"
-        your_rest_server_host = "localhost"
+        # 本地服务
+        # eureka_server_list = "http://localhost:10100/eureka/"
+
+        # 远程服务
+        eureka_server_list = "http://172.16.60.5:10100/eureka/"
+
+        # your_rest_server_host = "localhost"
+        your_rest_server_host = "172.16.113.28"
         your_rest_server_port = 10112
 
         # The flowing code will register your server to eureka server and also start to send heartbeat every 30 seconds
@@ -40,6 +46,7 @@ def main():
         #                                # 返回类型，默认为 `string`，可以传入 `json`，如果传入值是 `json`，那么该方法会返回一个 `dict` 对象
         #                                return_type="string")
         settings.SYS_CODE = syscode['payload']
+        # print(type(settings.SYS_CODE))
 
         #
         # syslog = eureka_client.do_service("SYSTEM-LOG", "/sys_log/add",

@@ -3,7 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 from common.utils.http_request import req_get_param
-from common.response import app_ok_p, app_err, sys_app_ok_p
+from common.response import app_ok_p, app_err, sys_app_ok_p, sys_app_err
 from common.error_code import Error
 import binwalk
 
@@ -14,14 +14,16 @@ def index(request):
 # 固件文件头自动解码或解析
 def binwalk_scan_signature(request):
     filename = req_get_param(request, 'filename')
+    result_list = list()
     try:
         for module in binwalk.scan(filename, signature=True, quiet=True):
             print("%s Results:" % module.name)
             for result in module.results:
+                result_list.append("\t%s    0x%.8X    %s" % (result.file.path, result.offset, result.description))
                 print("\t%s    0x%.8X    %s" % (result.file.path, result.offset, result.description))
     except binwalk.ModuleException as e:
         print("Critical failure:", e)
-    return sys_app_ok_p('binwalk OK.')
+    return sys_app_ok_p({'binwalk OK.': result_list})
 
 # 架构识别
 def binwalk_scan_opcodes(request):
@@ -34,13 +36,13 @@ def binwalk_scan_opcodes(request):
             print("%s Results:" % module.name)
             for result in module.results:
                 print("\t%s    0x%.8X    %s" % (result.file.path, result.offset, result.description))
-                if ("X86" in result.description):
+                if ("X86" in result.description.upper()):
                     structure = 'X86'
                     break
-                elif ("ARM" in result.description):
+                elif ("ARM" in result.description.upper()):
                     structure = "ARM"
                     break
-                elif ("MIPS" in result.description):
+                elif ("MIPS" in result.description.upper()):
                     structure = "MIPS"
                     break
                 else:
@@ -48,13 +50,14 @@ def binwalk_scan_opcodes(request):
                     break
     except binwalk.ModuleException as e:
         print("Critical failure:", e)
-        return app_err(Error.INTERNAL_EXCEPT)
-    return app_ok_p({'structure': structure,})
+        return sys_app_err('ERROR_INTERNAL_ERROR')
+    return sys_app_ok_p({'structure': structure,})
 
 # 抽取文件
 def binwalk_file_extract(request):
     filename = req_get_param(request, 'filename')
     try:
+        # filename=US_W331AV1.0BR_V1.0.0.12_cn&en_TD.bin 文件名带特殊符号无法进行抽取文件
         for module in binwalk.scan(filename, signature=True, quiet=True, extract=True):
             for result in module.results:
                 if result.file.path in module.extractor.output:
@@ -73,8 +76,8 @@ def binwalk_file_extract(request):
                         module.extractor.output[result.file.path].extracted[result.offset].command)
     except binwalk.ModuleException as e:
         print("Critical failure:", e)
-        return app_err(Error.INTERNAL_EXCEPT)
-    return app_ok_p({'extract': 'ok',})
+        return sys_app_err('ERROR_INTERNAL_ERROR')
+    return sys_app_ok_p({'extract': 'ok',})
 
 
 def binwalk_file_test(request):
@@ -98,5 +101,5 @@ def binwalk_file_test(request):
                         module.extractor.output[result.file.path].extracted[result.offset].command)
     except binwalk.ModuleException as e:
         print("Critical failure:", e)
-        return app_err(Error.INTERNAL_EXCEPT)
-    return app_ok_p({'extract': 'ok',})
+        return sys_app_err('ERROR_INTERNAL_ERROR')
+    return sys_app_ok_p({'extract': 'ok',})
