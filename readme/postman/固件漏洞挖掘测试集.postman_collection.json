@@ -311,13 +311,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_scan_signature?filename=C:\\GIT\\firmwareanalyze\\firmware\\WNR3500v2-V1.0.2.10_23.0.70.chk",
+							"raw": "{{base_url}}/fw-analyze/decode?filename=C:\\GIT\\firmwareanalyze\\firmware\\WNR3500v2-V1.0.2.10_23.0.70.chk",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_scan_signature"
+								"decode"
 							],
 							"query": [
 								{
@@ -335,13 +335,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_scan_opcodes?filename=C:\\GIT\\firmwareanalyze\\firmware\\WNR3500v2-V1.0.2.10_23.0.70.chk",
+							"raw": "{{base_url}}/fw-analyze/arch?filename=C:\\GIT\\firmwareanalyze\\firmware\\WNR3500v2-V1.0.2.10_23.0.70.chk",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_scan_opcodes"
+								"arch"
 							],
 							"query": [
 								{
@@ -359,13 +359,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_scan_opcodes?filename=C:\\GIT\\firmwareanalyze\\firmware\\fwr310v3-cn-up.bin",
+							"raw": "{{base_url}}/fw-analyze/arch?filename=C:\\GIT\\firmwareanalyze\\firmware\\fwr310v3-cn-up.bin",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_scan_opcodes"
+								"arch"
 							],
 							"query": [
 								{
@@ -383,13 +383,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_scan_opcodes?filename=C:\\GIT\\firmwareanalyze\\firmware\\DI_7500G16.12.30A1.bin",
+							"raw": "{{base_url}}/fw-analyze/arch?filename=C:\\GIT\\firmwareanalyze\\firmware\\DI_7500G16.12.30A1.bin",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_scan_opcodes"
+								"arch"
 							],
 							"query": [
 								{
@@ -407,18 +407,18 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_scan_opcodes?filename=C:\\GIT\\firmwareanalyze\\firmware\\DSL-2740EL.img",
+							"raw": "{{base_url}}/fw-analyze/angrarch?filename=C:\\GIT\\firmwareanalyze\\firmware\\fwr310v3-cn-up.bin",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_scan_opcodes"
+								"angrarch"
 							],
 							"query": [
 								{
 									"key": "filename",
-									"value": "C:\\GIT\\firmwareanalyze\\firmware\\DSL-2740EL.img"
+									"value": "C:\\GIT\\firmwareanalyze\\firmware\\fwr310v3-cn-up.bin"
 								}
 							]
 						}
@@ -431,13 +431,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_file_extract?filename=C:\\GIT\\firmwareanalyze\\firmware\\WNR3500v2-V1.0.2.10_23.0.70.chk",
+							"raw": "{{base_url}}/fw-analyze/extract?filename=C:\\GIT\\firmwareanalyze\\firmware\\WNR3500v2-V1.0.2.10_23.0.70.chk",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_file_extract"
+								"extract"
 							],
 							"query": [
 								{
@@ -455,13 +455,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_file_extract?filename=C:\\GIT\\firmwareanalyze\\firmware\\US_W331AV1.0BR_V1.0.0.12_cn&en_TD.bin",
+							"raw": "{{base_url}}/fw-analyze/extract?filename=C:\\GIT\\firmwareanalyze\\firmware\\US_W331AV1.0BR_V1.0.0.12_cn&en_TD.bin",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_file_extract"
+								"extract"
 							],
 							"query": [
 								{
@@ -478,23 +478,23 @@
 					"response": []
 				},
 				{
-					"name": "1.6 抽取文件 Copy Copy",
+					"name": "1.7 转换代码",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/fw-analyze/binwalk_file_extract?filename=C:\\GIT\\firmwareanalyze\\firmware\\US_W331AV1.0.bin",
+							"raw": "{{base_url}}/fw-analyze/convertcode?filename=C:\\GIT\\firmwareanalyze\\firmware\\56",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"fw-analyze",
-								"binwalk_file_extract"
+								"convertcode"
 							],
 							"query": [
 								{
 									"key": "filename",
-									"value": "C:\\GIT\\firmwareanalyze\\firmware\\US_W331AV1.0.bin"
+									"value": "C:\\GIT\\firmwareanalyze\\firmware\\56"
 								}
 							]
 						}
